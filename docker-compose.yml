@@ -1,0 +1,14 @@
+services:
+   mary-piper:
+      image: peteh/mary-piper:latest
+      build:
+         context: .
+         dockerfile: Dockerfile
+      container_name: mary-piper
+      ports:
+      - 59125:59125
+      #environment: 
+      #- SAMPLE=value
+      restart: unless-stopped
+      #volumes:
+      #- ./storage/:/storage/
