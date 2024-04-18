@@ -30,6 +30,7 @@ class ServerApp():
         return self._voices
     
     def mary_voices(self):
+        # TODO: add voices from custom folder
         lines = []
         voices = self._voices
         for voice_name in voices:

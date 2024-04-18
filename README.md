@@ -2,6 +2,8 @@
 
 Mary Piper is a MaryTTS compatible web api for PiperTTS. It automatically resolves and downloads voices if they are not present yet.
 
+[![Yotube Demo](https://img.youtube.com/vi/9V-3SGUvbJo/0.jpg)](https://www.youtube.com/watch?v=9V-3SGUvbJo)
+
 ## Installation
 
 ### Python
@@ -27,7 +29,7 @@ This will spawn the server at 0.0.0.0:59125.
 
 Install docker and docker-compose.
 
-Build the docker container locally. 
+Build the docker container locally.
 
 ```bash
 docker-compose build
