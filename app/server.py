@@ -25,7 +25,9 @@ class ServerApp():
         self._voice_cache_dir = voice_cache_dir
         self._voice_custom_dir = voice_custom_dir
         self._voices = get_voices(self._voice_cache_dir, update_voices=True)
-    
+        self._last_voice_name = None
+        self._last_voice = None
+
     def _get_voices(self) -> List[str]:
         return self._voices
     
@@ -51,34 +53,41 @@ class ServerApp():
     
     def mary_process(self, request):
         voices_info = self._get_voices()
-        voice_name = "NO VOICE SELECTED"
+        voice_request = "NO VOICE SELECTED"
+    
         speaker_id = None
         if request.method == "POST":
             data = parse_qs(request.data.decode())
             text = data.get("INPUT_TEXT", [""])[0]
 
             if "VOICE" in data:
-                voice_name = str(data.get("VOICE", [voice_name])[0]).strip()
+                voice_request = str(data.get("VOICE", [voice_request])[0]).strip()
         else:
             text = request.args.get("INPUT_TEXT", "")
-            voice_name = str(request.args.get("VOICE", voice_name)).strip()
-
-        if ":" in voice_name:
-            speaker_name = voice_name[voice_name.find(":")+1:]
-            
-            voice_name = voice_name[:voice_name.find(":")]
-            print(voices_info[voice_name])
+            voice_request = str(request.args.get("VOICE", voice_request)).strip()
+        if ":" in voice_request:
+            speaker_name = voice_request[voice_request.find(":")+1:]
+            voice_name = voice_request[:voice_request.find(":")]
             speaker_id = voices_info[voice_name]["speaker_id_map"][speaker_name]
+        else:
+            voice_name = voice_request
         print(voice_name)
         print(speaker_id)
         print(text)
-        try:
-            onnx_path, config_path = find_voice(voice_name, [self._voice_cache_dir, self._voice_custom_dir])
-        except ValueError:
-            ensure_voice_exists(voice_name, [self._voice_cache_dir], self._voice_cache_dir, voices_info)
-            onnx_path, config_path = find_voice(voice_name, [self._voice_cache_dir, self._voice_custom_dir])
-
-        voice = PiperVoice.load(onnx_path, config_path=None, use_cuda=False)
+        if self._last_voice_name == voice_name:
+            # use cached voice
+            print(f"Voice '{voice_name}' already loaded, skip loading")
+            voice = self._last_voice
+        else:
+            try:
+                onnx_path, _ = find_voice(voice_name, [self._voice_cache_dir, self._voice_custom_dir])
+            except ValueError:
+                ensure_voice_exists(voice_name, [self._voice_cache_dir], self._voice_cache_dir, voices_info)
+                onnx_path, _ = find_voice(voice_name, [self._voice_cache_dir, self._voice_custom_dir])
+            
+            voice = PiperVoice.load(onnx_path, config_path=None, use_cuda=False)
+            self._last_voice_name = voice_name
+            self._last_voice = voice
         
         synthesize_args = {
             "speaker_id": speaker_id,
