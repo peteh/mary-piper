@@ -10,5 +10,6 @@ services:
       #environment: 
       #- SAMPLE=value
       restart: unless-stopped
-      #volumes:
-      #- ./storage/:/storage/
+      volumes:
+      - ./data/:/chache_voices/
+      - ./custom/:/custom_voices/
